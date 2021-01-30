@@ -1,0 +1,140 @@
+{
+  "name": "servicebus-ts",
+  "description": "A TypeScript implementation of the servicebus module",
+  "version": "0.1.0",
+  "author": {
+    "name": "Marc Römmelt",
+    "email": "mail@m-roemmelt.com"
+  },
+  "bugs": {
+    "url": "https://github.com/MarcRoemmelt/servicebus-ts/issues"
+  },
+  "bundleDependencies": false,
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "contributors": [
+    "mattwalters5@gmail.com",
+    "timisbusy@gmail.com",
+    "mail@chrisabrams.com",
+    "pat@patscott.io",
+    "mail@m-roemmelt.com"
+  ],
+  "dependencies": {
+    "@letsdally/autobind": "^0.1.3",
+    "amqplib": "^0.6.0",
+    "bluebird": "^3.7.2",
+    "debug": "^4.3.1",
+    "eventemitter2": "^6.4.3",
+    "joi": "^17.3.0",
+    "lodash": "^4.17.20",
+    "luxon": "^1.25.0",
+    "readable-id-mjs": "^1.0.0",
+    "shortid": "^2.2.16",
+    "uuid": "^8.3.2"
+  },
+  "deprecated": false,
+  "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@tsconfig/recommended": "^1.0.1",
+    "@types/amqplib": "^0.5.17",
+    "@types/chai": "^4.2.14",
+    "@types/chai-as-promised": "^7.1.3",
+    "@types/debug": "^4.1.5",
+    "@types/lodash": "^4.14.168",
+    "@types/luxon": "^1.25.1",
+    "@types/mocha": "^8.2.0",
+    "@types/node": "^14.14.22",
+    "@types/shortid": "0.0.29",
+    "@types/sinon": "^9.0.10",
+    "@types/uuid": "^8.3.0",
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "@typescript-eslint/parser": "^4.14.1",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "commitizen": "^4.2.3",
+    "concurrently": "^5.3.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^7.18.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-mocha": "^8.0.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-security": "^1.4.0",
+    "fixpack": "^4.0.0",
+    "husky": "^4.3.8",
+    "lint-staged": "^10.5.3",
+    "lodash": "^4.17.20",
+    "longjohn": "^0.2.12",
+    "mocha": "^8.2.1",
+    "npm-check-updates": "^11.1.1",
+    "nyc": "^15.1.0",
+    "prettier": "^2.2.1",
+    "sinon": "^9.2.4",
+    "source-map-support": "^0.5.19",
+    "ts-loader": "^8.0.14",
+    "ts-node": "^9.1.1",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^4.1.3"
+  },
+  "directories": {
+    "lib": "./dist/index.js"
+  },
+  "homepage": "https://github.com/MarcRoemmelt/servicebus-ts#readme",
+  "husky": {
+    "hooks": {
+      "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "lint-staged",
+      "pre-push": "npm run inspect:all && npm publish"
+    }
+  },
+  "keywords": [
+    "amqp",
+    "eventbus",
+    "messagequeue",
+    "microservice",
+    "nodejs",
+    "pubsub",
+    "rabbitmq",
+    "typescript"
+  ],
+  "license": "MIT",
+  "lint-staged": {
+    "package.json": [
+      "fixpack"
+    ],
+    "*.{js,ts}": [
+      "eslint --cache --fix"
+    ]
+  },
+  "main": "./dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/MarcRoemmelt/servicebus-ts.git"
+  },
+  "scripts": {
+    "build": "npm run clean && tsc --project tsconfig.build.json",
+    "clean": "rm -rf ./dist && mkdir ./dist",
+    "commit": "cz",
+    "inspect:all": "concurrently -c \"bgBlue.bold,bgMagenta.bold,yellow\" \"npm:inspect:test\" \"npm:inspect:lint\" \"npm:inspect:vulnerabilities\" \"npm:inspect:outdated\"",
+    "inspect:lint": "eslint \"**/*.{js,ts}\"",
+    "inspect:outdated": "ncu --timeout 120000 --packageFile package.json",
+    "inspect:test": "npm run test",
+    "inspect:vulnerabilities": "npm audit",
+    "prepublish": "npm run build",
+    "test": "npm run test:setup && npm run test:run",
+    "test:execute": "nyc mocha --recursive -r source-map-support/register -r ts-node/register --use_strict --exit \"lib/**/*.unit.ts\";",
+    "test:run": "docker-compose run tests",
+    "test:setup": "docker-compose up -d rabbitmq && sleep 30",
+    "upgrade": "ncu -u --timeout 120000 && npm i"
+  },
+  "types": "./dist/index.d.ts"
+}
