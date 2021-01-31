@@ -46,15 +46,7 @@ export class Correlator extends EventEmitter {
         });
     }
 
-    public queueName(
-        options: IPubSubQueueOptions,
-        callback: (err: null | Error, result?: string) => Promise<void> | void,
-    ): void {
-        if (!this.initialized) {
-            this.on('ready', this.queueName.bind(this, options, callback));
-            return;
-        }
-
+    public async queueName(options: IPubSubQueueOptions): Promise<string> {
         let result;
 
         if (this.queues.hasOwnProperty(options.queueName)) {
@@ -66,17 +58,14 @@ export class Correlator extends EventEmitter {
             this.queues[options.queueName] = result;
         }
 
-        this.persistQueueFile((err) => {
-            if (err) {
-                void callback(err);
-                return;
-            }
-            void callback(null, result);
-        });
+        await this.persistQueueFile();
+        return result;
     }
 
-    public persistQueueFile(callback: fs.NoParamCallback): void {
-        const contents = JSON.stringify(this.queues);
-        fs.writeFile(this.filename, contents, callback);
+    public async persistQueueFile(): Promise<void> {
+        return new Promise((r) => {
+            const contents = JSON.stringify(this.queues);
+            fs.writeFile(this.filename, contents, () => r());
+        });
     }
 }

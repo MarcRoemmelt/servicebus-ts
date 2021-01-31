@@ -102,10 +102,10 @@ export class PubSubQueue extends EventEmitter {
         );
     }
 
-    public subscribe(
+    public async subscribe(
         options: IPubSubQueueOptions,
         callback: (content: IMessage['content'], message: IMessage, channel: Channel) => void,
-    ): SubscribeReceipt {
+    ): Promise<SubscribeReceipt> {
         let subscribed = false;
         let subscription: null | { consumerTag: string } = null;
 
@@ -175,20 +175,19 @@ export class PubSubQueue extends EventEmitter {
             receipt.emit('subscribed');
         };
 
-        this.correlator.queueName(options, async (err, uniqueName) => {
-            if (err) throw err;
-            await this.listenChannel.assertQueue(uniqueName!, this.queueOptions);
-            await this.listenChannel.bindQueue(uniqueName!, this.exchangeName, this.routingKey || this.queueName);
+        const uniqueName = await this.correlator.queueName(options);
 
-            if (this.ack) {
-                this.log('asserting error queue ' + this.errorQueueName);
-                const errorQueueOptions = Object.assign(this.queueOptions, {
-                    autoDelete: options.autoDeleteErrorQueue || false,
-                });
-                await this.listenChannel.assertQueue(this.errorQueueName, errorQueueOptions);
-            }
-            await _subscribe(uniqueName);
-        });
+        await this.listenChannel.assertQueue(uniqueName, this.queueOptions);
+        await this.listenChannel.bindQueue(uniqueName, this.exchangeName, this.routingKey || this.queueName);
+
+        if (this.ack) {
+            this.log('asserting error queue ' + this.errorQueueName);
+            const errorQueueOptions = Object.assign(this.queueOptions, {
+                autoDelete: options.autoDeleteErrorQueue || false,
+            });
+            await this.listenChannel.assertQueue(this.errorQueueName, errorQueueOptions);
+        }
+        await _subscribe(uniqueName);
 
         return receipt;
     }

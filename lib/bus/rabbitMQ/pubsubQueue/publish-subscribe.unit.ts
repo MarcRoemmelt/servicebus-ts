@@ -98,19 +98,20 @@ describe('servicebus', function () {
                 }
             }, 100);
             void bus
-                .subscribe('my.event.14', { ack: true }, function (event, message, channel) {
+                .subscribe('my.event.14', { ack: true }, function (event, msg, channel) {
                     count++;
                     log(`received my.event.14 ${count} times`);
-                    channel.ack(message as any);
+                    channel.ack(msg as any);
                 })
-                .then((sub) => subscriptions.push(sub));
-
-            setTimeout(function () {
-                void bus.publish('my.event.14', { my: 'event' });
-                void bus.publish('my.event.14', { my: 'event' });
-                void bus.publish('my.event.14', { my: 'event' });
-                void bus.publish('my.event.14', { my: 'event' });
-            }, 100);
+                .then((sub) => {
+                    setTimeout(() => {
+                        subscriptions.push(sub);
+                        void bus.publish('my.event.14', { my: 'event' });
+                        void bus.publish('my.event.14', { my: 'event' });
+                        void bus.publish('my.event.14', { my: 'event' });
+                        void bus.publish('my.event.14', { my: 'event' });
+                    }, 100);
+                });
         });
 
         it('should use callback in confirm mode', function (done) {
@@ -142,11 +143,13 @@ describe('servicebus', function () {
                 })
                 .then((subscription) => {
                     setTimeout(function () {
-                        void bus.publish('my.event.30', {}).then(() => subscription.unsubscribe());
-                        setTimeout(function () {
-                            expectation.callCount.should.eql(1);
-                            void bus.destroyListener('my.event.30', { force: true }).then(() => done());
-                        }, 100);
+                        void bus.publish('my.event.30', {}).then(() => {
+                            setTimeout(function () {
+                                subscription.unsubscribe();
+                                expectation.callCount.should.eql(1);
+                                void bus.destroyListener('my.event.30', { force: true }).then(() => done());
+                            }, 100);
+                        });
                     }, 1000);
                 });
         });

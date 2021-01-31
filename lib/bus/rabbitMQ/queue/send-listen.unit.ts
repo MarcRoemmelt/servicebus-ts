@@ -85,16 +85,19 @@ describe('servicebus', function () {
                     void bus.destroyListener('my.event.4').then(() => done());
                 }
             }, 10);
-            void bus.listen('my.event.4', { ack: true }, function (content, message, channel) {
-                count++;
-                channel.ack(message as any);
-            });
-            setTimeout(function () {
-                void bus.send('my.event.4', { my: Math.random() }, { ack: true });
-                void bus.send('my.event.4', { my: Math.random() }, { ack: true });
-                void bus.send('my.event.4', { my: Math.random() }, { ack: true });
-                void bus.send('my.event.4', { my: Math.random() }, { ack: true });
-            }, 100);
+            void bus
+                .listen('my.event.4', { ack: true }, function (content, message, channel) {
+                    count++;
+                    channel.ack(message as any);
+                })
+                .then(() => {
+                    setTimeout(function () {
+                        void bus.send('my.event.4', { my: Math.random() }, { ack: true });
+                        void bus.send('my.event.4', { my: Math.random() }, { ack: true });
+                        void bus.send('my.event.4', { my: Math.random() }, { ack: true });
+                        void bus.send('my.event.4', { my: Math.random() }, { ack: true });
+                    }, 100);
+                });
         });
 
         it('should use callback in confirm mode', function (done) {

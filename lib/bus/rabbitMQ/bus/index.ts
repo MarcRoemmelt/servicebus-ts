@@ -280,7 +280,7 @@ export class RabbitMQBus extends Bus {
             this.pubsubqueues[fullOptions.queueName] = pubSubQueue;
         }
 
-        handle = this.pubsubqueues[fullOptions.queueName].subscribe(fullOptions, callback);
+        handle = await this.pubsubqueues[fullOptions.queueName].subscribe(fullOptions, callback);
 
         const receipt = new SubscribeReceipt(_unsubscribe);
 
