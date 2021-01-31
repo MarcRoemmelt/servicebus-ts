@@ -1,5 +1,6 @@
 import 'longjohn';
 import { bus as b } from '.';
+import { MemoryStore, retryMiddleware } from './bus/middleware/retry';
 import { RabbitMQBus } from './bus/rabbitMQ/bus';
 
 if (!process.env.RABBITMQ_URL)
@@ -8,7 +9,6 @@ if (!process.env.RABBITMQ_URL)
     );
 
 const busUrl = process.env.RABBITMQ_URL;
-// const retry = require('servicebus-retry');
 let bus: RabbitMQBus;
 export default async function (): Promise<RabbitMQBus> {
     if (!bus) {
@@ -21,11 +21,11 @@ export default async function (): Promise<RabbitMQBus> {
         bus.use(bus.package());
         bus.use(bus.correlate());
         bus.use(bus.logger());
-        // bus.use(
-        //     retry({
-        //         store: retry.MemoryStore(),
-        //     }),
-        // );
+        bus.use(
+            retryMiddleware({
+                store: new MemoryStore(),
+            }),
+        );
     }
     return bus;
 }
