@@ -60,7 +60,7 @@
     "commitizen": "4.2.3",
     "concurrently": "5.3.0",
     "cz-conventional-changelog": "3.3.0",
-    "eslint": "7.18.0",
+    "eslint": "7.19.0",
     "eslint-config-prettier": "7.2.0",
     "eslint-plugin-mocha": "8.0.0",
     "eslint-plugin-node": "11.1.0",
@@ -91,7 +91,7 @@
       "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
       "pre-commit": "lint-staged",
-      "pre-push": "npm run inspect:all && npm publish"
+      "pre-push": "npm run inspect:all"
     }
   },
   "keywords": [
@@ -131,7 +131,7 @@
     "inspect:test": "npm run test",
     "inspect:vulnerabilities": "npm audit",
     "posttest": "docker-compose down -v",
-    "prepublish": "npm run build && npm version patch",
+    "prepublishOnly": "npm run build && npm version patch",
     "rm:queue": "rm .queues; exit 0",
     "test": "npm run rm:queue && npm run test:setup && npm run test:run",
     "test:execute": "nyc mocha --recursive -r source-map-support/register -r ts-node/register --use_strict --exit \"lib/**/*.unit.ts\"",
