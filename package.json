@@ -132,7 +132,7 @@
     "inspect:test": "npm run test",
     "inspect:vulnerabilities": "npm audit",
     "posttest": "docker-compose down -v",
-    "prepublish": "npm run build",
+    "prepublish": "npm run build && npm version patch",
     "rm:queue": "rm .queues; exit 0",
     "test": "npm run rm:queue && npm run test:setup && npm run test:run",
     "test:execute": "nyc mocha --recursive -r source-map-support/register -r ts-node/register --use_strict --exit \"lib/**/*.unit.ts\"",
