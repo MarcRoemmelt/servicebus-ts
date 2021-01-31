@@ -1,7 +1,7 @@
 {
   "name": "servicebus-ts",
   "description": "A TypeScript implementation of the servicebus module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Marc Römmelt",
     "email": "mail@m-roemmelt.com"
