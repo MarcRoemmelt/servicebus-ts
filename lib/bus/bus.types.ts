@@ -1,13 +1,22 @@
-import { Channel, ConfirmChannel, ConsumeMessage, Options } from 'amqplib';
+import { Channel, ConfirmChannel, Options } from 'amqplib';
 import { RabbitMQBus } from './rabbitMQ/bus';
 
-export type IMessage = ConsumeMessage & {
-    content: Record<string, any>;
+export type IMessage = {
+    content: {
+        [key: string]: any;
+        handle: {
+            reject: (cb?: (err?: Error | null) => void) => void;
+            ack: (cb?: (msg?: IMessage) => void) => void;
+            acknowledge: (cb?: (msg?: IMessage) => void) => void;
+        };
+    };
+    fields: Record<string, any>;
+    properties: Record<string, any>;
 };
 export type IOptions = Record<string, any>;
 
 export interface IIncomingNextFn {
-    (error: Error): void;
+    (error: null | Error): void;
     (error: null | Error, channel: Channel, message: IMessage, options: IOptions | null): void;
     (
         error: null | Error,

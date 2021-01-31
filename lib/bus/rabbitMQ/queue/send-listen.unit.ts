@@ -87,7 +87,7 @@ describe('servicebus', function () {
             }, 10);
             void bus.listen('my.event.4', { ack: true }, function (content, message, channel) {
                 count++;
-                channel.ack(message);
+                channel.ack(message as any);
             });
             setTimeout(function () {
                 void bus.send('my.event.4', { my: Math.random() }, { ack: true });
@@ -170,7 +170,7 @@ describe('servicebus', function () {
             }
             void bus
                 .listen('my.event.18', { ack: true }, function (content, message, channel) {
-                    channel.ack(message);
+                    channel.ack(message as any);
                     tryDone(new Error('should not receive events after destroy'));
                 })
                 .then(() => bus.destroyListener('my.event.18'))

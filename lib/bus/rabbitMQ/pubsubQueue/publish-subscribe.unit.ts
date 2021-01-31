@@ -85,7 +85,7 @@ describe('servicebus', function () {
         });
 
         it('sends subsequent messages only after previous messages are acknowledged', function (done) {
-            this.timeout(5000);
+            this.timeout(10000);
             let count = 0;
             const subscriptions: SubscribeReceipt[] = [];
             const interval = setInterval(function checkDone() {
@@ -101,7 +101,7 @@ describe('servicebus', function () {
                 .subscribe('my.event.14', { ack: true }, function (event, message, channel) {
                     count++;
                     log(`received my.event.14 ${count} times`);
-                    channel.ack(message);
+                    channel.ack(message as any);
                 })
                 .then((sub) => subscriptions.push(sub));
 
@@ -142,13 +142,12 @@ describe('servicebus', function () {
                 })
                 .then((subscription) => {
                     setTimeout(function () {
-                        void bus.publish('my.event.30', {});
-                        subscription.unsubscribe();
+                        void bus.publish('my.event.30', {}).then(() => subscription.unsubscribe());
                         setTimeout(function () {
                             expectation.callCount.should.eql(1);
                             void bus.destroyListener('my.event.30', { force: true }).then(() => done());
                         }, 100);
-                    }, 500);
+                    }, 1000);
                 });
         });
 

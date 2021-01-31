@@ -96,7 +96,7 @@ export class Queue extends EventEmitter {
     }
 
     public async listen(
-        callback: (content: Record<string, any>, message: IMessage, channel: Channel) => void,
+        callback: (content: IMessage['content'], message: IMessage, channel: Channel) => void,
         options: IQueueOptions,
     ): Promise<void> {
         options = options || {};
@@ -122,25 +122,30 @@ export class Queue extends EventEmitter {
 
                 message.content = options.formatter.deserialize(message.content.toString());
                 options.queueType = 'queue';
-                this.bus.handleIncoming(this.listenChannel, message, options, (err, channel, message) => {
-                    if (err) {
-                        this.emit('error', err);
-                        return;
-                    }
-                    // amqplib intercepts errors and closes connections before bubbling up
-                    // to domain error handlers when they occur non-asynchronously within
-                    // callback. Therefore, if there is a process domain, we try-catch to
-                    // redirect the error, assuming the domain creator's intentions.
-                    try {
-                        callback(message!.content, message!, channel!);
-                    } catch (err) {
-                        if (process.domain && process.domain.listeners('error')) {
-                            process.domain.emit('error', err);
-                        } else {
+                this.bus.handleIncoming(
+                    this.listenChannel,
+                    (message as unknown) as IMessage,
+                    options,
+                    (err, channel, message) => {
+                        if (err) {
                             this.emit('error', err);
+                            return;
                         }
-                    }
-                });
+                        // amqplib intercepts errors and closes connections before bubbling up
+                        // to domain error handlers when they occur non-asynchronously within
+                        // callback. Therefore, if there is a process domain, we try-catch to
+                        // redirect the error, assuming the domain creator's intentions.
+                        try {
+                            callback(message!.content, message!, channel!);
+                        } catch (err) {
+                            if (process.domain && process.domain.listeners('error')) {
+                                process.domain.emit('error', err);
+                            } else {
+                                this.emit('error', err);
+                            }
+                        }
+                    },
+                );
             },
             { noAck: !this.ack },
         );

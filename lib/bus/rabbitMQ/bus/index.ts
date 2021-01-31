@@ -130,13 +130,13 @@ export class RabbitMQBus extends Bus {
 
     public async listen(
         queueName: string,
-        opts: Partial<IPubSubQueueOptions> | ((content: Record<string, any>, message: IMessage) => void),
-        cb?: (content: Record<string, any>, message: IMessage, channel: Channel) => void,
+        opts: Partial<IPubSubQueueOptions> | ((content: IMessage['content'], message: IMessage) => void),
+        cb?: (content: IMessage['content'], message: IMessage, channel: Channel) => void,
     ): Promise<void> {
         this.log('listen on queue %j', queueName);
         const options = typeof opts === 'function' ? {} : opts;
         const callback = (typeof opts === 'function' ? opts : cb) as (
-            content: Record<string, any>,
+            content: IMessage['content'],
             message: IMessage,
         ) => void;
 
@@ -219,8 +219,12 @@ export class RabbitMQBus extends Bus {
         const callback = (typeof opts === 'function' ? opts : cb) as (err: any, ok?: Replies.Empty) => void;
 
         if (!this.initialized) {
-            this.on('ready', () => void this.send.bind(this, queueName, message, options, callback));
-            return;
+            return new Promise((r) => {
+                this.on(
+                    'ready',
+                    () => void this.send.call(this, queueName, message, options, callback).then(() => r()),
+                );
+            });
         }
 
         if (callback && !this.confirmChannel)
@@ -234,15 +238,18 @@ export class RabbitMQBus extends Bus {
             this.queues[key] = await Queue.create(fullOptions);
         }
 
-        this.handleOutgoing(fullOptions.queueName, message, fullOptions, (queueName, message, fullOptions) => {
-            this.queues[key].send(message, fullOptions, callback);
+        return new Promise((r) => {
+            this.handleOutgoing(fullOptions.queueName, message, fullOptions, (queueName, message, fullOptions) => {
+                this.queues[key].send(message, fullOptions, callback);
+                r();
+            });
         });
     }
 
     public async subscribe(
         queueName: string,
         opts: Partial<IPubSubQueueOptions> | ((...args: any[]) => void),
-        cb?: (...args: any[]) => void,
+        cb?: (content: IMessage['content'], message: IMessage, channel: Channel) => void,
     ): Promise<SubscribeReceipt> {
         const options = typeof opts === 'function' ? {} : opts;
         const callback = (typeof opts === 'function' ? opts : cb) as (...args: any[]) => void;
@@ -294,8 +301,9 @@ export class RabbitMQBus extends Bus {
         const options = typeof opts === 'function' ? {} : opts;
 
         if (!this.initialized) {
-            this.on('ready', () => void this.publish.bind(this, queueName, message, options, cb));
-            return;
+            return new Promise((r) => {
+                this.on('ready', () => void this.publish.call(this, queueName, message, options, cb).then(() => r()));
+            });
         }
 
         if (cb && !this.confirmChannel)
@@ -310,8 +318,11 @@ export class RabbitMQBus extends Bus {
             this.pubsubqueues[key] = await PubSubQueue.create(fullOptions);
         }
 
-        this.handleOutgoing(fullOptions.queueName, message, fullOptions, (queueName, message, fullOptions) => {
-            this.pubsubqueues[key].publish(message, fullOptions, cb);
+        return new Promise((r) => {
+            this.handleOutgoing(fullOptions.queueName, message, fullOptions, (queueName, message, fullOptions) => {
+                this.pubsubqueues[key].publish(message, fullOptions, cb);
+                r();
+            });
         });
     }
 
