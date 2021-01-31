@@ -12,6 +12,8 @@ services:
     user: root
     environment:
       RABBITMQ_URL: amqp://rabbitmq:5672
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     networks:
       - servicebus
     command: npm run test:execute
@@ -22,3 +24,10 @@ services:
       - servicebus
     ports:
       - 5672:5672
+
+  redis:
+    image: redis
+    networks:
+      - servicebus
+    ports:
+      - 6379:6379
